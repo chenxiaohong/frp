@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: tgymnich/fork-sync@v1.8
       - name: Sync dev branch
+        uses: tgymnich/fork-sync@v1.8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: fatedier
@@ -20,12 +20,8 @@ jobs:
           base: dev
           head: dev
 
-  main:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: tgymnich/fork-sync@v1.8
       - name: Sync main branch
+        uses: tgymnich/fork-sync@v1.8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: fatedier

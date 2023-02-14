@@ -12,9 +12,23 @@ jobs:
 
     steps:
       - uses: tgymnich/fork-sync@v1.8
+      - name: Sync dev branch
         with:
-          token: 	${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           owner: fatedier
           repo: frp
           base: dev
           head: dev
+
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: tgymnich/fork-sync@v1.8
+      - name: Sync main branch
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          owner: fatedier
+          repo: frp
+          base: main
+          head: main

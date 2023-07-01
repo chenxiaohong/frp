@@ -1,8 +1,12 @@
-### New
+### Features
 
-* The `httpconnect` type in `tcpmux` now supports authentication through the parameters `http_user` and `http_pwd`.
+* frpc supports connecting to frps via the wss protocol by enabling the configuration `protocol = wss`.
+* frpc supports stopping the service through the stop command.
 
-### Improved
+### Improvements
 
-* The web framework has been upgraded to vue3 + element-plus, and the dashboard has added some information display and supports dark mode.
-* The e2e testing has been switched to ginkgo v2.
+* service.Run supports passing in context.
+
+### Fixes
+
+* Fix an issue caused by a bug in yamux that prevents wss from working properly in certain plugins.

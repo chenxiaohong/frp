@@ -1,4 +1,3 @@
-
 # frp
 
 [![Build Status](https://circleci.com/gh/fatedier/frp.svg?style=shield)](https://circleci.com/gh/fatedier/frp)
@@ -12,12 +11,7 @@
   <a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=frp&utm_source=github" target="_blank">
     <img width="350px" src="https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_workos.png">
   </a>
-  <a>&nbsp</a>
-  <a href="https://asocks.com/c/vDu6Dk" target="_blank">
-    <img width="350px" src="https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_asocks.jpg">
-  </a>
 </p>
-
 <!--gold sponsors end-->
 
 ## What is frp?
@@ -349,20 +343,15 @@ Configure `frps` same as above.
 
 Note that it may not work with all types of NAT devices. You might want to fallback to stcp if xtcp doesn't work.
 
-1. In `frps.ini` configure a UDP port for xtcp:
-
-  ```ini
-  # frps.ini
-  bind_udp_port = 7001
-  ```
-
-2. Start `frpc` on machine B, and expose the SSH port. Note that the `remote_port` field is removed:
+1. Start `frpc` on machine B, and expose the SSH port. Note that the `remote_port` field is removed:
 
   ```ini
   # frpc.ini
   [common]
   server_addr = x.x.x.x
   server_port = 7000
+  # set up a new stun server if the default one is not available.
+  # nat_hole_stun_server = xxx
 
   [p2p_ssh]
   type = xtcp
@@ -371,13 +360,15 @@ Note that it may not work with all types of NAT devices. You might want to fallb
   local_port = 22
   ```
 
-3. Start another `frpc` (typically on another machine C) with the configuration to connect to SSH using P2P mode:
+2. Start another `frpc` (typically on another machine C) with the configuration to connect to SSH using P2P mode:
 
   ```ini
   # frpc.ini
   [common]
   server_addr = x.x.x.x
   server_port = 7000
+  # set up a new stun server if the default one is not available.
+  # nat_hole_stun_server = xxx
 
   [p2p_ssh_visitor]
   type = xtcp
@@ -386,9 +377,11 @@ Note that it may not work with all types of NAT devices. You might want to fallb
   sk = abcdefg
   bind_addr = 127.0.0.1
   bind_port = 6000
+  # when automatic tunnel persistence is required, set it to true
+  keep_tunnel_open = false
   ```
 
-4. On machine C, connect to SSH on machine B, using this command:
+3. On machine C, connect to SSH on machine B, using this command:
 
   `ssh -oPort=6000 127.0.0.1`
 
@@ -569,11 +562,9 @@ use_compression = true
 
 #### TLS
 
-frp supports the TLS protocol between `frpc` and `frps` since v0.25.0.
+Since v0.50.0, the default value of `tls_enable` and `disable_custom_tls_first_byte` has been changed to true, and tls is enabled by default.
 
-For port multiplexing, frp sends a first byte `0x17` to dial a TLS connection.
-
-Configure `tls_enable = true` in the `[common]` section to `frpc.ini` to enable this feature.
+For port multiplexing, frp sends a first byte `0x17` to dial a TLS connection. This only takes effect when you set `disable_custom_tls_first_byte` to false.
 
 To **enforce** `frps` to only accept TLS connections - configure `tls_only = true` in the `[common]` section in `frps.ini`. **This is optional.**
 
@@ -588,7 +579,6 @@ tls_trusted_ca_file = ca.crt
 **`frps` TLS settings (under the `[common]` section):**
 ```ini
 tls_only = true
-tls_enable = true
 tls_cert_file = certificate.crt
 tls_key_file = certificate.key
 tls_trusted_ca_file = ca.crt

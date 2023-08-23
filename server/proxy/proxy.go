@@ -241,7 +241,9 @@ func (pxy *BaseProxy) handleUserTCPConnection(userConn net.Conn) {
 		}
 	}
 	if cfg.UseCompression {
-		local = libio.WithCompression(local)
+		var recycleFn func()
+		local, recycleFn = libio.WithCompressionFromPool(local)
+		defer recycleFn()
 	}
 
 	if pxy.GetLimiter() != nil {

@@ -108,9 +108,9 @@ type Service struct {
 
 func NewService(cfg *v1.ServerConfig) (svr *Service, err error) {
 	tlsConfig, err := transport.NewServerTLSConfig(
-		cfg.TLS.CertFile,
-		cfg.TLS.KeyFile,
-		cfg.TLS.TrustedCaFile)
+		cfg.Transport.TLS.CertFile,
+		cfg.Transport.TLS.KeyFile,
+		cfg.Transport.TLS.TrustedCaFile)
 	if err != nil {
 		return
 	}
@@ -455,7 +455,7 @@ func (svr *Service) HandleListener(l net.Listener) {
 		log.Trace("start check TLS connection...")
 		originConn := c
 		var isTLS, custom bool
-		c, isTLS, custom, err = utilnet.CheckAndEnableTLSServerConnWithTimeout(c, svr.tlsConfig, svr.cfg.TLS.Force, connReadTimeout)
+		c, isTLS, custom, err = utilnet.CheckAndEnableTLSServerConnWithTimeout(c, svr.tlsConfig, svr.cfg.Transport.TLS.Force, connReadTimeout)
 		if err != nil {
 			log.Warn("CheckAndEnableTLSServerConnWithTimeout error: %v", err)
 			originConn.Close()
@@ -532,12 +532,6 @@ func (svr *Service) RegisterControl(ctlConn net.Conn, loginMsg *msg.Login) (err 
 	ctx = xlog.NewContext(ctx, xl)
 	xl.Info("client login info: ip [%s] version [%s] hostname [%s] os [%s] arch [%s]",
 		ctlConn.RemoteAddr().String(), loginMsg.Version, loginMsg.Hostname, loginMsg.Os, loginMsg.Arch)
-
-	// Check client version.
-	if ok, msg := version.Compat(loginMsg.Version); !ok {
-		err = fmt.Errorf("%s", msg)
-		return
-	}
 
 	// Check auth.
 	if err = svr.authVerifier.VerifyLogin(loginMsg); err != nil {

@@ -22,7 +22,6 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/fatedier/frp/pkg/consts"
 	"github.com/fatedier/frp/pkg/util/util"
 )
 
@@ -35,7 +34,7 @@ type VisitorBaseConfig struct {
 	Name      string           `json:"name"`
 	Type      string           `json:"type"`
 	Transport VisitorTransport `json:"transport,omitempty"`
-	SecretKey string           `json:"sk,omitempty"`
+	SecretKey string           `json:"secretKey,omitempty"`
 	// if the server user is not set, it defaults to the current user
 	ServerUser string `json:"serverUser,omitempty"`
 	ServerName string `json:"serverName,omitempty"`
@@ -73,10 +72,18 @@ type VisitorConfigurer interface {
 	GetBaseConfig() *VisitorBaseConfig
 }
 
-var visitorConfigTypeMap = map[string]reflect.Type{
-	consts.STCPProxy: reflect.TypeOf(STCPVisitorConfig{}),
-	consts.XTCPProxy: reflect.TypeOf(XTCPVisitorConfig{}),
-	consts.SUDPProxy: reflect.TypeOf(SUDPVisitorConfig{}),
+type VisitorType string
+
+const (
+	VisitorTypeSTCP VisitorType = "stcp"
+	VisitorTypeXTCP VisitorType = "xtcp"
+	VisitorTypeSUDP VisitorType = "sudp"
+)
+
+var visitorConfigTypeMap = map[VisitorType]reflect.Type{
+	VisitorTypeSTCP: reflect.TypeOf(STCPVisitorConfig{}),
+	VisitorTypeXTCP: reflect.TypeOf(XTCPVisitorConfig{}),
+	VisitorTypeSUDP: reflect.TypeOf(SUDPVisitorConfig{}),
 }
 
 type TypedVisitorConfig struct {
@@ -97,9 +104,9 @@ func (c *TypedVisitorConfig) UnmarshalJSON(b []byte) error {
 	}
 
 	c.Type = typeStruct.Type
-	configurer := NewVisitorConfigurerByType(typeStruct.Type)
+	configurer := NewVisitorConfigurerByType(VisitorType(typeStruct.Type))
 	if configurer == nil {
-		return fmt.Errorf("unknown visitor type: %s" + typeStruct.Type)
+		return fmt.Errorf("unknown visitor type: %s", typeStruct.Type)
 	}
 	if err := json.Unmarshal(b, configurer); err != nil {
 		return err
@@ -108,7 +115,7 @@ func (c *TypedVisitorConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func NewVisitorConfigurerByType(t string) VisitorConfigurer {
+func NewVisitorConfigurerByType(t VisitorType) VisitorConfigurer {
 	v, ok := visitorConfigTypeMap[t]
 	if !ok {
 		return nil

@@ -26,9 +26,10 @@ func TestClientConfigComplete(t *testing.T) {
 	c := &ClientConfig{}
 	c.Complete()
 
-	require.Equal("token", c.Auth.Method)
+	require.EqualValues("token", c.Auth.Method)
 	require.Equal(true, lo.FromPtr(c.Transport.TCPMux))
 	require.Equal(true, lo.FromPtr(c.LoginFailExit))
 	require.Equal(true, lo.FromPtr(c.Transport.TLS.Enable))
 	require.Equal(true, lo.FromPtr(c.Transport.TLS.DisableCustomTLSFirstByte))
+	require.NotEmpty(c.NatHoleSTUNServer)
 }

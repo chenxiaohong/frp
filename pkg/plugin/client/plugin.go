@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/fatedier/golib/errors"
+	pp "github.com/pires/go-proxyproto"
 
 	v1 "github.com/fatedier/frp/pkg/config/v1"
 )
@@ -32,6 +33,9 @@ var creators = make(map[string]CreatorFn)
 type CreatorFn func(options v1.ClientPluginOptions) (Plugin, error)
 
 func Register(name string, fn CreatorFn) {
+	if _, exist := creators[name]; exist {
+		panic(fmt.Sprintf("plugin [%s] is already registered", name))
+	}
 	creators[name] = fn
 }
 
@@ -44,11 +48,14 @@ func Create(name string, options v1.ClientPluginOptions) (p Plugin, err error) {
 	return
 }
 
+type ExtraInfo struct {
+	ProxyProtocolHeader *pp.Header
+}
+
 type Plugin interface {
 	Name() string
 
-	// extraBufToLocal will send to local connection first, then join conn with local connection
-	Handle(conn io.ReadWriteCloser, realConn net.Conn, extraBufToLocal []byte)
+	Handle(conn io.ReadWriteCloser, realConn net.Conn, extra *ExtraInfo)
 	Close() error
 }
 

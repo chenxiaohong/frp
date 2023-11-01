@@ -46,8 +46,8 @@ for os in $os_all; do
             mv ./frps_${os}_${arch} ${frp_path}/frps
         fi  
         cp ../LICENSE ${frp_path}
-        cp -rf ../conf/* ${frp_path}
-        rm -rf ${frp_path}/legacy
+        cp -f ../conf/frpc.toml ${frp_path}
+        cp -f ../conf/frps.toml ${frp_path}
 
         # packages
         cd ./packages

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !frps
+
 package proxy
 
 import (
@@ -89,7 +91,7 @@ func (pxy *UDPProxy) Close() {
 func (pxy *UDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 	xl := pxy.xl
 	xl.Info("incoming a new work connection for udp proxy, %s", conn.RemoteAddr().String())
-	// close resources releated with old workConn
+	// close resources related with old workConn
 	pxy.Close()
 
 	var rwc io.ReadWriteCloser = conn

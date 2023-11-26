@@ -45,8 +45,13 @@ func (svr *Service) healthz(w http.ResponseWriter, _ *http.Request) {
 }
 
 // GET /api/reload
-func (svr *Service) apiReload(w http.ResponseWriter, _ *http.Request) {
+func (svr *Service) apiReload(w http.ResponseWriter, r *http.Request) {
 	res := GeneralResponse{Code: 200}
+	strictConfigMode := false
+	strictStr := r.URL.Query().Get("strictConfig")
+	if strictStr != "" {
+		strictConfigMode, _ = strconv.ParseBool(strictStr)
+	}
 
 	log.Info("api request [/api/reload]")
 	defer func() {
@@ -57,7 +62,7 @@ func (svr *Service) apiReload(w http.ResponseWriter, _ *http.Request) {
 		}
 	}()
 
-	cliCfg, pxyCfgs, visitorCfgs, _, err := config.LoadClientConfig(svr.cfgFile)
+	cliCfg, pxyCfgs, visitorCfgs, _, err := config.LoadClientConfig(svr.cfgFile, strictConfigMode)
 	if err != nil {
 		res.Code = 400
 		res.Msg = err.Error()
@@ -144,7 +149,14 @@ func (svr *Service) apiStatus(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(buf)
 	}()
 
-	ps := svr.ctl.pm.GetAllProxyStatus()
+	svr.ctlMu.RLock()
+	ctl := svr.ctl
+	svr.ctlMu.RUnlock()
+	if ctl == nil {
+		return
+	}
+
+	ps := ctl.pm.GetAllProxyStatus()
 	for _, status := range ps {
 		res[status.Type] = append(res[status.Type], NewProxyStatusResp(status, svr.cfg.ServerAddr))
 	}

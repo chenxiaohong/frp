@@ -1,4 +1,4 @@
-// Copyright 2016 fatedier, fatedier@gmail.com
+// Copyright 2023 The frp Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,36 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package auth
 
 import (
-	"strconv"
-	"strings"
+	"github.com/fatedier/frp/pkg/msg"
 )
 
-var version = "0.53.0"
+var AlwaysPassVerifier = &alwaysPass{}
 
-func Full() string {
-	return version
-}
+var _ Verifier = &alwaysPass{}
 
-func getSubVersion(v string, position int) int64 {
-	arr := strings.Split(v, ".")
-	if len(arr) < 3 {
-		return 0
-	}
-	res, _ := strconv.ParseInt(arr[position], 10, 64)
-	return res
-}
+type alwaysPass struct{}
 
-func Proto(v string) int64 {
-	return getSubVersion(v, 0)
-}
+func (*alwaysPass) VerifyLogin(*msg.Login) error { return nil }
 
-func Major(v string) int64 {
-	return getSubVersion(v, 1)
-}
+func (*alwaysPass) VerifyPing(*msg.Ping) error { return nil }
 
-func Minor(v string) int64 {
-	return getSubVersion(v, 2)
-}
+func (*alwaysPass) VerifyNewWorkConn(*msg.NewWorkConn) error { return nil }

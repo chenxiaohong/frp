@@ -1,4 +1,4 @@
-// Copyright 2016 fatedier, fatedier@gmail.com
+// Copyright 2023 The frp Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,36 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package ssh
 
 import (
-	"strconv"
-	"strings"
+	"github.com/fatedier/frp/client/proxy"
+	v1 "github.com/fatedier/frp/pkg/config/v1"
 )
 
-var version = "0.53.0"
-
-func Full() string {
-	return version
-}
-
-func getSubVersion(v string, position int) int64 {
-	arr := strings.Split(v, ".")
-	if len(arr) < 3 {
-		return 0
-	}
-	res, _ := strconv.ParseInt(arr[position], 10, 64)
-	return res
-}
-
-func Proto(v string) int64 {
-	return getSubVersion(v, 0)
-}
-
-func Major(v string) int64 {
-	return getSubVersion(v, 1)
-}
-
-func Minor(v string) int64 {
-	return getSubVersion(v, 2)
+func createSuccessInfo(user string, pc v1.ProxyConfigurer, ps *proxy.WorkingStatus) string {
+	base := pc.GetBaseConfig()
+	out := "\n"
+	out += "frp (via SSH) (Ctrl+C to quit)\n\n"
+	out += "User: " + user + "\n"
+	out += "ProxyName: " + base.Name + "\n"
+	out += "Type: " + base.Type + "\n"
+	out += "RemoteAddress: " + ps.RemoteAddr + "\n"
+	return out
 }

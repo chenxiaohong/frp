@@ -1,4 +1,4 @@
-// Copyright 2016 fatedier, fatedier@gmail.com
+// Copyright 2023 The frp Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,36 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package net
 
 import (
-	"strconv"
-	"strings"
+	"context"
+	"net"
 )
 
-var version = "0.53.0"
-
-func Full() string {
-	return version
-}
-
-func getSubVersion(v string, position int) int64 {
-	arr := strings.Split(v, ".")
-	if len(arr) < 3 {
-		return 0
+func SetDefaultDNSAddress(dnsAddress string) {
+	if _, _, err := net.SplitHostPort(dnsAddress); err != nil {
+		dnsAddress = net.JoinHostPort(dnsAddress, "53")
 	}
-	res, _ := strconv.ParseInt(arr[position], 10, 64)
-	return res
-}
-
-func Proto(v string) int64 {
-	return getSubVersion(v, 0)
-}
-
-func Major(v string) int64 {
-	return getSubVersion(v, 1)
-}
-
-func Minor(v string) int64 {
-	return getSubVersion(v, 2)
+	// Change default dns server
+	net.DefaultResolver = &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			return net.Dial("udp", dnsAddress)
+		},
+	}
 }
